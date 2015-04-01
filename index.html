@@ -52,7 +52,7 @@
         }
 
         function main() {
-            setTimeout('Calc()', 1);
+            setTimeout('Calc()', 100);
         }
     </script>
 
@@ -76,14 +76,32 @@
 <pre><code>
 AutoMatic page
 </code></pre>
+01.04.2015
+<h3>Canvas testing</h3>
+<canvas id="TestCanvas" width=10 heigth=10>Error canvas initiate</canvas>
 
+<hr>
+01.04.2015
 <h3>
     Пример решения задачи с поиском минимальных чисел которые делятся на N Делителей 
     без остатка</h3>
+ <pre>         maxm = 2000;
+                for (g = 1; g < maxm; g++)
+                    for (j = 1; j < maxm; j++) {
+                    i = j * g;
+                    (t[i] === undefined) ? t[i] = 1 : t[i]++;
+                }
 
+                for (var b in t) {
+                    var z = t[b];
+                    if (r[z] === undefined && b <= maxm)
+                        r[z] = b;
+                }
+              </pre>
     <p id="Calculations">
     Calculating...
     </p>
+   
       </section>
     </div>
     <!--[if !IE]><script>fixScale(document);</script><![endif]-->
