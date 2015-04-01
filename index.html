@@ -15,17 +15,49 @@
     <![endif]-->
 
     <script>
+        //Функция производит поиск минималных целых чисел которые делятся на N Количество делителей без остатка
+        function SearchMinDivs() {
+            var t = {};
+            var r = [];
+            this.SearchAll = function() {
 
-        function ball() {
-            this.z = 2;
-            var o = new Object();
-            o.i = 1;
+                maxm = 2000;
+                for (g = 1; g < maxm; g++)
+                    for (j = 1; j < maxm; j++) {
+                    i = j * g;
+                    (t[i] === undefined) ? t[i] = 1 : t[i]++;
+                }
+
+                for (var b in t) {
+                    var z = t[b];
+                    if (r[z] === undefined && b <= maxm)
+                        r[z] = b;
+                }
+                return r;
+            }
+
+            this.ShowAll = function() {
+                result = '';
+                for (var l in r) result = result + '<br>Минимальное число ' + r[l] + '  делится без остатка на ' + l + ' делителей';
+                return result;
+            }
         }
-        
+
+        function Calc() {
+            var Search = new SearchMinDivs();
+            Search.SearchAll();
+            var res = Search.ShowAll();
+            var pp = document.getElementById('Calculations');
+            pp.innerHTML = res;
+        }
+
+        function main() {
+            setTimeout('Calc()', 1);
+        }
     </script>
 
 </head>
-<body>
+<body onload='main()'>
     <div class="wrapper">
         <header class="without-description">
         <h1>Znsoft</h1>
@@ -45,32 +77,15 @@
 AutoMatic page
 </code></pre>
 
-<p>If you're using the GitHub for Mac, simply sync your repository and you'll see the new branch.</p>
-
 <h3>
-<a id="designer-templates" class="anchor" href="#designer-templates" aria-hidden="true"><span class="octicon octicon-link"></span></a>Designer Templates</h3>
+    Пример решения задачи с поиском минимальных чисел которые делятся на N Делителей 
+    без остатка</h3>
 
-<p>We've crafted some handsome templates for you to use. Go ahead and continue to layouts to browse through them. You can easily go back to edit your page before publishing. After publishing your page, you can revisit the page generator and switch to another theme. Your Page content will be preserved if it remained markdown format.</p>
-
-<h3>
-<a id="rather-drive-stick" class="anchor" href="#rather-drive-stick" aria-hidden="true"><span class="octicon octicon-link"></span></a>Rather Drive Stick?</h3>
-
-<p>If you prefer to not use the automatic generator, push a branch named <code>gh-pages</code> to your repository to create a page manually. In addition to supporting regular HTML content, GitHub Pages support Jekyll, a simple, blog aware static site generator written by our own Tom Preston-Werner. Jekyll makes it easy to create site-wide headers and footers without having to copy them across every page. It also offers intelligent blog support and other advanced templating features.</p>
-
-<h3>
-<a id="authors-and-contributors" class="anchor" href="#authors-and-contributors" aria-hidden="true"><span class="octicon octicon-link"></span></a>Authors and Contributors</h3>
-
-<p>You can <a href="https://github.com/blog/821" class="user-mention">@mention</a> a GitHub username to generate a link to their profile. The resulting <code>&lt;a&gt;</code> element will link to the contributor's GitHub Profile. For example: In 2007, Chris Wanstrath (<a href="https://github.com/defunkt" class="user-mention">@defunkt</a>), PJ Hyett (<a href="https://github.com/pjhyett" class="user-mention">@pjhyett</a>), and Tom Preston-Werner (<a href="https://github.com/mojombo" class="user-mention">@mojombo</a>) founded GitHub.</p>
-
-<h3>
-<a id="support-or-contact" class="anchor" href="#support-or-contact" aria-hidden="true"><span class="octicon octicon-link"></span></a>Support or Contact</h3>
-
-<p>Having trouble with Pages? Check out the documentation at <a href="https://help.github.com/pages">https://help.github.com/pages</a> or contact <a href="mailto:support@github.com">support@github.com</a> and we’ll help you sort it out.</p>
+    <p id="Calculations">
+    Calculating...
+    </p>
       </section>
     </div>
-    <footer>
-      <p>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></p>
-    </footer>
     <!--[if !IE]><script>fixScale(document);</script><![endif]-->
 </body>
 </html>
