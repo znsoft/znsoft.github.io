@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="stylesheets/pygment_trac.css">
 
     <script src="javascripts/scale.fix.js"></script>
+    <script src="javascripts/jsbn.js"></script>
+    <script src="javascripts/jsbn2.js"></script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
     <!--[if lt IE 9]>
@@ -15,8 +17,29 @@
     <![endif]-->
 
     <script>
+Math.
+        function GetByteInterpretationToString(a) {
+
+            i = "y=x,y+=x,y*=x,y=Math.sin(x),y=Math.cos(x),y=Math.abs(x),y=Math.ceil(x),Math.exp(x),Math.floor(x),Math.log(x),Math.pow(x),Math.sqrt(x),Math.tan(x),Math.E(x),Math.PI(x),Math.max(x),Math.min(x),Math.acos(x),Math.asin(x),Math.atan(x)".split();
+        
+        }
+    
+    
         var O = function() {
-            this.Z = 1;
+            x = new BigInteger("10", 16);
+            y = BigInteger.ZERO;
+            z = new BigInteger("ffffffffffffffff", 16);
+            for (i = 1; i < 100; i++) {
+                y = y.add(BigInteger.ONE);
+                x = x.add(y).and(z);
+            }
+            s = x.toByteArray();
+            for (i = 0; i < 7; i++) {
+                document.write(s[i]+" ");
+            }
+
+
+            this.Z = x.toString(16);
         }
         var R = new O();
         document.write(R.Z);//Проверка доступности свойств на мобилбраузерах
