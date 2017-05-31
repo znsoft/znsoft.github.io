@@ -7,7 +7,6 @@
 
 <body>
 
-
 <table style="width: 100%;"  frame="lhs">
     <tr>
         <td>
@@ -38,10 +37,14 @@
                      />
             Текст сообщений
                 <tr>
-                    <td style="width:8%;">
+                    <td style="width:8%;" abbr="time">
                         Время</td>
-                    <td style="width:90%;">
-                        Сообщение</td>
+                    <td style="width:90%;" abbr="edit">
+                        Сообщение  
+                        <input align='right' 
+                            style='padding: 0px; margin: 1px; font-family:; position: static; top: auto; right: 100%;'
+                            Times New Roman', Times, serif; font-size: xx-small' type='button' value='Edit' 
+                            checked="checked" dir="rtl"  /> </td>
                     <td style="width:2%;" abbr="checkbox">
                         завершение</td>
                 </tr>
@@ -78,21 +81,11 @@
             &nbsp;
         </td>
     </tr>
-    <tr>
-        <td>
-            &nbsp;
-        </td>
-        <td>
-            &nbsp;
-        </td>
-        <td>
-            &nbsp;
-        </td>
-    </tr>
+
 </table>
 
 <script type="text/javascript">
-
+//----------------------------------------Table-class---------
     var MyTable = function (db, tableName, requisits, vistable) {
         //transaction.executeSql('CREATE TABLE IF NOT EXISTS Product(productid INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, productname TEXT NOT NULL, price INTEGER, qoh INTEGER);', [], nullDataHandler, killTransaction);
         db.exeqQuery("SELECT COUNT(*) FROM " + tableName, [], function (tx,result) { },  function (tx, error) {tx.executeSql("CREATE TABLE " + tableName + " (" + requisits + ")", [], null, null); });
@@ -118,30 +111,36 @@
 
         }
     }
-     
 
+//----------------------------------------Table ----------
+//----------------------------------------DB-class---------
     var MyDatabase = function (dbName) {
         this.tables = [];
         var db = openDatabase(dbName, "0.1", "A list of to do items.", 200000);
         if (!db) { alert("Failed to connect to database."); }
         db.exeqQuery = function (query, data, callback, errcallback) {
             db.transaction(function (tx) {
+                if (errcallback == null) errcallback = function (tx, result) {
+                    alert("SQL error\n" + result.message); 
+                };
                 tx.executeSql(query, data, callback, errcallback);
             });
         }
         this.execQuery = db.exeqQuery;
         this.initTable = function (tableName, requisits, insertcallback) {
-            if(!this.tables.hasOwnProperty(tableName))this.tables[tableName] = new MyTable(db, tableName, requisits, insertcallback);
+            if (!this.tables.hasOwnProperty(tableName)) this.tables[tableName] = new MyTable(db, tableName, requisits, insertcallback);
             return this.tables[tableName];
         }
     }
 
+    //----------------------------------------DB----------
+    //----------------------------------------Visual-table-show--------
 
     var MyVisTable = function (table, requisits) {
-        
+
         this.columns = requisits;
-        
-        this.clear = function(){
+
+        this.clear = function () {
             for (i = 1; i < table.rows.length; i++) table.deleteRow(1);
             return this;
         }
@@ -153,18 +152,38 @@
                 abbr = table.rows[0].cells[cell].abbr;
                 switch (abbr) {
                     case "checkbox":
-                        cell1.innerHTML = "<input type='checkbox' checked='" + values[cell].toString() + "' />";
+                        cell1.innerHTML = "<input type='checkbox' checked='" + values[cell].toString() + "' onchange='timechange()' />";
                         break;
+                    case "time":
+                        cell1.innerHTML = "<input type='time' value='" + values[cell].toString() + "' onchange='timechange()' />";
+                        break;
+                    case "edit":
+                        cell1.innerHTML = values[cell] + " <input align='right' style='padding: 1px; margin: 0px; font-family: 'Times New Roman', Times, serif; font-size: xx-small' type='button' value='Edit'  />";
+
+                        
+
+                        break;
+
                     case "":
                         cell1.innerHTML = values[cell];
-                    break;
+                        break;
                 }
             }
         }
     }
 
-    function ДобавитьВТаблицуСообщений_onclick() {
-        messages.insert("(starttime, message, isfinish) values(?,?,?)", [new Date(), "test", false]);
+//----------------------------------------Visual----------
+
+function timechange(value) { 
+    
+    
+    
+    }
+
+function ДобавитьВТаблицуСообщений_onclick() {
+    text = prompt("Введите текст сообщения");
+
+    messages.insert("(starttime, message, isfinish) values(?,?,?)", ["08:00", text, false]);
     }
 
     function ДобавитьВТаблицуТехническихРабот_onclick() {
@@ -177,7 +196,7 @@
     var events = myDB.initTable("events", "startdate DATE NOT NULL PRIMARY KEY, isfinish BOOLEAN", eventsTable);
     events.update();
 
-    var messageTable = new MyVisTable(document.getElementById("messageTable"), "startdate,isfinish");
+    var messageTable = new MyVisTable(document.getElementById("messageTable"), "starttime,message,isfinish");
     var messages = myDB.initTable("messages", "starttime PRIMARY KEY, message, isfinish BOOLEAN", messageTable);
     messages.update();
 
@@ -198,5 +217,9 @@ https://www.w3schools.com/sql/sql_datatypes_general.asp
 
 
 </script>
+
+    <p>
+        &nbsp;</p>
+
 
 </html>
