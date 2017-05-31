@@ -1,0 +1,202 @@
+<html>
+<head>
+
+
+</head>
+
+
+<body>
+
+
+<table style="width: 100%;"  frame="lhs">
+    <tr>
+        <td>
+            <table style="width: 100%; color: #000000; background-color: #FFCCFF;" 
+                id="eventTable" border="1" frame="box">
+                <input id="ДобавитьВТаблицуТехническихРабот" title="ДобавитьВТаблицуТехническихРабот"
+                    type="button" value="+" style="font-weight: 700; text-align: left; float: left"   onclick="return ДобавитьВТаблицуТехническихРабот_onclick()" />
+                Таблица технических работ
+                <tr id="ШапкаТаблицыТехническихРабот">
+                    <td headers="Дата работ" title="Дата работ" style="width: 99%;" >
+                        Дата работ &nbsp;
+                    </td>
+                    <td title="Завершена" abbr="checkbox">
+                        Завершена
+                    </td>
+                </tr>
+
+            </table>
+        </td>
+        <td>
+            &nbsp;
+            <table 
+                id="messageTable" style="width:100%;" bgcolor="Info" border="1" 
+                frame="box" summary="gfdgfd" title="gfhfhgf">
+                <input type="button" value="+" style="font-weight: 700; text-align: left; float: left" onclick="ДобавитьВТаблицуСообщений_onclick()" />
+                <input type="button" value="-" 
+                    style="font-weight: 700; text-align: left; float: left; width: 24px;" 
+                     />
+            Текст сообщений
+                <tr>
+                    <td style="width:8%;">
+                        Время</td>
+                    <td style="width:90%;">
+                        Сообщение</td>
+                    <td style="width:2%;" abbr="checkbox">
+                        завершение</td>
+                </tr>
+                </table>
+&nbsp;</td>
+        <td>
+            &nbsp;
+            <table 
+                id="adresesTable" style="width:100%;" bgcolor="Info" border="1" 
+                frame="box" summary="gfdgfd" title="gfhfhgf">
+                <input type="button" value="+" style="font-weight: 700; text-align: left; float: left"  />
+                <input type="button" value="-" 
+                    style="font-weight: 700; text-align: left; float: left; width: 24px;" 
+                     />
+
+                Адресаты
+                <tr>
+                    <td style="width:98%;">
+                        Адресат</td>
+                    <td style="width:2%;" abbr="checkbox">
+                        Использовать</td>
+                </tr>
+                </table>
+&nbsp;</td>
+    </tr>
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+        <td>
+            &nbsp;
+        </td>
+        <td>
+            &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+        <td>
+            &nbsp;
+        </td>
+        <td>
+            &nbsp;
+        </td>
+    </tr>
+</table>
+
+<script type="text/javascript">
+
+    var MyTable = function (db, tableName, requisits, vistable) {
+        //transaction.executeSql('CREATE TABLE IF NOT EXISTS Product(productid INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, productname TEXT NOT NULL, price INTEGER, qoh INTEGER);', [], nullDataHandler, killTransaction);
+        db.exeqQuery("SELECT COUNT(*) FROM " + tableName, [], function (tx,result) { },  function (tx, error) {tx.executeSql("CREATE TABLE " + tableName + " (" + requisits + ")", [], null, null); });
+
+        this.insert = function (requisit, values) {
+            db.exeqQuery("INSERT INTO " + tableName + " " + requisit, values, null, null);
+            this.update();
+        }
+
+
+
+        this.update = function () {
+            vistable.clear();
+            db.exeqQuery("SELECT " + vistable.columns + " FROM " + tableName, [], function (tx,result) {
+                columns = vistable.columns.split(',');
+                for (var i = 0; i < result.rows.length; i++) {
+                    values = [];
+                    for (col in columns) values.push(result.rows.item(i)[columns[col]]);
+                    vistable.addrow(values);
+                }
+
+            }, null);
+
+        }
+    }
+     
+
+    var MyDatabase = function (dbName) {
+        this.tables = [];
+        var db = openDatabase(dbName, "0.1", "A list of to do items.", 200000);
+        if (!db) { alert("Failed to connect to database."); }
+        db.exeqQuery = function (query, data, callback, errcallback) {
+            db.transaction(function (tx) {
+                tx.executeSql(query, data, callback, errcallback);
+            });
+        }
+        this.execQuery = db.exeqQuery;
+        this.initTable = function (tableName, requisits, insertcallback) {
+            if(!this.tables.hasOwnProperty(tableName))this.tables[tableName] = new MyTable(db, tableName, requisits, insertcallback);
+            return this.tables[tableName];
+        }
+    }
+
+
+    var MyVisTable = function (table, requisits) {
+        
+        this.columns = requisits;
+        
+        this.clear = function(){
+            for (i = 1; i < table.rows.length; i++) table.deleteRow(1);
+            return this;
+        }
+
+        this.addrow = function (values) {
+            var row = table.insertRow(1);
+            for (cell in values) {
+                var cell1 = row.insertCell(cell);
+                abbr = table.rows[0].cells[cell].abbr;
+                switch (abbr) {
+                    case "checkbox":
+                        cell1.innerHTML = "<input type='checkbox' checked='" + values[cell].toString() + "' />";
+                        break;
+                    case "":
+                        cell1.innerHTML = values[cell];
+                    break;
+                }
+            }
+        }
+    }
+
+    function ДобавитьВТаблицуСообщений_onclick() {
+        messages.insert("(starttime, message, isfinish) values(?,?,?)", [new Date(), "test", false]);
+    }
+
+    function ДобавитьВТаблицуТехническихРабот_onclick() {
+        events.insert("(startdate,isfinish) values(?,?)", [new Date().toDateString(), false]);
+    }
+
+    var myDB = new MyDatabase("todo");
+
+    var eventsTable = new MyVisTable(document.getElementById("eventTable"), "startdate,isfinish");
+    var events = myDB.initTable("events", "startdate DATE NOT NULL PRIMARY KEY, isfinish BOOLEAN", eventsTable);
+    events.update();
+
+    var messageTable = new MyVisTable(document.getElementById("messageTable"), "startdate,isfinish");
+    var messages = myDB.initTable("messages", "starttime PRIMARY KEY, message, isfinish BOOLEAN", messageTable);
+    messages.update();
+
+
+
+
+
+
+/*
+http://www.databasejournal.com/sqletc/article.php/3903201/Using-the-Web-SQL-Database-API-in-HTML-5.htm
+https://habrahabr.ru/post/84654/
+https://www.w3schools.com/sql/sql_datatypes_general.asp
+*/
+
+
+
+
+
+
+</script>
+
+</html>
