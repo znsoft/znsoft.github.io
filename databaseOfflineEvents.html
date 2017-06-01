@@ -85,35 +85,7 @@
 </table>
 
 <script type="text/javascript">
-//----------------------------------------Table-class---------
-    var MyTable = function (db, tableName, requisits, vistable) {
-        //transaction.executeSql('CREATE TABLE IF NOT EXISTS Product(productid INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, productname TEXT NOT NULL, price INTEGER, qoh INTEGER);', [], nullDataHandler, killTransaction);
-        db.exeqQuery("SELECT COUNT(*) FROM " + tableName, [], function (tx,result) { },  function (tx, error) {tx.executeSql("CREATE TABLE " + tableName + " (" + requisits + ")", [], null, null); });
-
-        this.insert = function (requisit, values) {
-            db.exeqQuery("INSERT INTO " + tableName + " " + requisit, values, null, null);
-            this.update();
-        }
-
-
-
-        this.update = function () {
-            vistable.clear();
-            db.exeqQuery("SELECT " + vistable.columns + " FROM " + tableName, [], function (tx,result) {
-                columns = vistable.columns.split(',');
-                for (var i = 0; i < result.rows.length; i++) {
-                    values = [];
-                    for (col in columns) values.push(result.rows.item(i)[columns[col]]);
-                    vistable.addrow(values);
-                }
-
-            }, null);
-
-        }
-    }
-
-//----------------------------------------Table ----------
-//----------------------------------------DB-class---------
+    //----------------------------------------DB-class---------
     var MyDatabase = function (dbName) {
         this.tables = [];
         var db = openDatabase(dbName, "0.1", "A list of to do items.", 200000);
@@ -121,7 +93,7 @@
         db.exeqQuery = function (query, data, callback, errcallback) {
             db.transaction(function (tx) {
                 if (errcallback == null) errcallback = function (tx, result) {
-                    alert("SQL error\n" + result.message); 
+                    alert("SQL error\n" + result.message);
                 };
                 tx.executeSql(query, data, callback, errcallback);
             });
@@ -129,11 +101,52 @@
         this.execQuery = db.exeqQuery;
         this.initTable = function (tableName, requisits, insertcallback) {
             if (!this.tables.hasOwnProperty(tableName)) this.tables[tableName] = new MyTable(db, tableName, requisits, insertcallback);
+            return this.tables[tableName].fullupdate();
+        }
+        this.getTable = function (tableName) {
             return this.tables[tableName];
         }
     }
 
     //----------------------------------------DB----------
+
+    //----------------------------------------Table-class---------
+
+    var MyTable = function (db, tableName, requisits, vistable) {
+        //transaction.executeSql('CREATE TABLE IF NOT EXISTS Product(productid INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, productname TEXT NOT NULL, price INTEGER, qoh INTEGER);', [], nullDataHandler, killTransaction);
+        db.exeqQuery("SELECT COUNT(*) FROM " + tableName, [], function (tx, result) { }, function (tx, error) { tx.exeqQuery("CREATE TABLE " + tableName + " (" + requisits + ",id not null)", [], null, null); });
+
+        this.insert = function (values) {
+            values.push(Date.now());
+            var str = "?".repeat(values.length).split('').join(",");
+            db.exeqQuery("INSERT INTO " + tableName + " (" + vistable.columns + ",id) values(" + str + ")", values, null, null);
+            this.fullupdate();
+        }
+
+        this.update = function (id, column, newvalue) {
+            var values = [newvalue, id];
+            db.exeqQuery("UPDATE OR REPLACE " + tableName + " SET " + column + "=? WHERE id =?", values, null, null);
+            this.fullupdate();
+        }
+
+        this.fullupdate = function () {
+            vistable.clear();
+            db.exeqQuery("SELECT " + vistable.columns + ",id FROM " + tableName, [], function (tx, result) {
+                columns = vistable.columns.split(',');
+                for (var i = 0; i < result.rows.length; i++) {
+                    //values = [];
+                    //for (col in columns) values.push(result.rows.item(i)[columns[col]]);
+                    vistable.addrow(result.rows.item(i), tableName);
+                }
+
+            }, null);
+            return this;
+
+        }
+    }
+
+//----------------------------------------Table ----------
+
     //----------------------------------------Visual-table-show--------
 
     var MyVisTable = function (table, requisits) {
@@ -145,60 +158,70 @@
             return this;
         }
 
-        this.addrow = function (values) {
+        this.addrow = function (values, tablename) {
             var row = table.insertRow(1);
-            for (cell in values) {
+            var id = values.id;
+            var i = 0;
+            var columns = this.columns.split(",")
+            for (cell in columns) {
+                //var vallen = values.lenght;
+                //for (var cell = 0; cell < vallen-1; cell++ ) {
                 var cell1 = row.insertCell(cell);
+                //var id = values[vallen];
                 abbr = table.rows[0].cells[cell].abbr;
+                var colname = columns[cell];
+                var value = values[colname];
                 switch (abbr) {
                     case "checkbox":
-                        cell1.innerHTML = "<input type='checkbox' checked='" + values[cell].toString() + "' onchange='timechange()' />";
+                        cell1.innerHTML = "<input type='checkbox' checked='" + value.toString() + "' onchange='flagchange(this.checked," + id + "," + tablename +","+colname+ ")' />";
                         break;
                     case "time":
-                        cell1.innerHTML = "<input type='time' value='" + values[cell].toString() + "' onchange='timechange()' />";
+                        cell1.innerHTML = "<input type='time' value='" + value.toString() + "' onchange='timechange(this.value," + id + "," + tablename +","+colname+ ")' />";
                         break;
                     case "edit":
-                        cell1.innerHTML = values[cell] + " <input align='right' style='padding: 1px; margin: 0px; font-family: 'Times New Roman', Times, serif; font-size: xx-small' type='button' value='Edit'  />";
-
-                        
-
+                        cell1.innerHTML = value + " <input align='right' style='padding: 1px; margin: 0px; font-family: 'Times New Roman', Times, serif; font-size: xx-small' type='button' value='Edit' onclick='edittextbox(" + id + "," + colname + "," + tablename+"," + value + ")' />";
                         break;
-
                     case "":
-                        cell1.innerHTML = values[cell];
+                        cell1.innerHTML = value;
                         break;
                 }
+
             }
         }
     }
 
 //----------------------------------------Visual----------
 
-function timechange(value) { 
-    
-    
-    
+    function timechange(value, id, tablename, colname) {
+        table = myDB.getTable(tablename);
+        table.update(id, value, colname);
+
     }
 
-function ДобавитьВТаблицуСообщений_onclick() {
-    text = prompt("Введите текст сообщения");
+    function flagchange(value, id, tablename, colname) {
+        table = myDB.getTable(tablename);
+        table.update(id, value, colname);
+    }
 
-    messages.insert("(starttime, message, isfinish) values(?,?,?)", ["08:00", text, false]);
+    function ДобавитьВТаблицуСообщений_onclick() {
+        text = prompt("Введите текст сообщения");
+
+        messages.insert( ["08:00", text, false]);
     }
 
     function ДобавитьВТаблицуТехническихРабот_onclick() {
-        events.insert("(startdate,isfinish) values(?,?)", [new Date().toDateString(), false]);
+        events.insert( [new Date().toDateString(), false]);
     }
 
     var myDB = new MyDatabase("todo");
 
     var eventsTable = new MyVisTable(document.getElementById("eventTable"), "startdate,isfinish");
     var events = myDB.initTable("events", "startdate DATE NOT NULL PRIMARY KEY, isfinish BOOLEAN", eventsTable);
-    events.update();
+    //events.fullupdate();
 
     var messageTable = new MyVisTable(document.getElementById("messageTable"), "starttime,message,isfinish");
     var messages = myDB.initTable("messages", "starttime PRIMARY KEY, message, isfinish BOOLEAN", messageTable);
-    messages.update();
+   // messages.fullupdate();
 
 
 
