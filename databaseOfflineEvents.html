@@ -16,7 +16,7 @@
                     type="button" value="+" style="font-weight: 700; text-align: left; float: left"   onclick="return ДобавитьВТаблицуТехническихРабот_onclick()" />
                 Таблица технических работ
                 <tr id="ШапкаТаблицыТехническихРабот">
-                    <td headers="Дата работ" title="Дата работ" style="width: 99%;" >
+                    <td headers="Дата работ" title="Дата Производимых работ" alt="kjhfhgjhfdgjhg" style="width: 99%;" >
                         Дата работ &nbsp;
                     </td>
                     <td title="Завершена" abbr="checkbox">
@@ -114,7 +114,11 @@
 
     var MyTable = function (db, tableName, requisits, vistable) {
         //transaction.executeSql('CREATE TABLE IF NOT EXISTS Product(productid INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, productname TEXT NOT NULL, price INTEGER, qoh INTEGER);', [], nullDataHandler, killTransaction);
-        db.exeqQuery("SELECT COUNT(*) FROM " + tableName, [], function (tx, result) { }, function (tx, error) { tx.exeqQuery("CREATE TABLE " + tableName + " (" + requisits + ",id not null)", [], null, null); });
+        db.exeqQuery("SELECT " + requisits + " FROM " + tableName, [],
+        function (tx, result) { },
+        function (tx, error) {
+            tx.executeSql("CREATE TABLE " + tableName + " (" + requisits + ",id not null)", [], null, null); 
+        });
 
         this.insert = function (values) {
             values.push(Date.now());
@@ -123,7 +127,7 @@
             this.fullupdate();
         }
 
-        this.update = function (id, column, newvalue) {
+        this.update = function (id, newvalue, column ) {
             var values = [newvalue, id];
             db.exeqQuery("UPDATE OR REPLACE " + tableName + " SET " + column + "=? WHERE id =?", values, null, null);
             this.fullupdate();
@@ -173,13 +177,13 @@
                 var value = values[colname];
                 switch (abbr) {
                     case "checkbox":
-                        cell1.innerHTML = "<input type='checkbox' checked='" + value.toString() + "' onchange='flagchange(this.checked," + id + "," + tablename +","+colname+ ")' />";
+                        cell1.innerHTML = "<input type='checkbox' "+((value=="true")?"checked=true":"")+ " onchange='flagchange(this," + id + ",\"" + tablename + "\",\"" + colname + "\")' />";
                         break;
                     case "time":
-                        cell1.innerHTML = "<input type='time' value='" + value.toString() + "' onchange='timechange(this.value," + id + "," + tablename +","+colname+ ")' />";
+                        cell1.innerHTML = "<input type='time' value='" + value.toString() + "' onchange='timechange(this," + id + ",\"" + tablename +"\",\""+colname+ "\")' />";
                         break;
                     case "edit":
-                        cell1.innerHTML = value + " <input align='right' style='padding: 1px; margin: 0px; font-family: 'Times New Roman', Times, serif; font-size: xx-small' type='button' value='Edit' onclick='edittextbox(" + id + "," + colname + "," + tablename+"," + value + ")' />";
+                        cell1.innerHTML = value + "  ...<input align='right' style='padding: 1px; margin: 0px; font-family: 'Times New Roman', Times, serif; font-size: xx-small' type='button' value='Edit' onclick='edittextbox(" + id + "," + colname + "," + tablename+"," + value + ")' />";
                         break;
                     case "":
                         cell1.innerHTML = value;
@@ -194,13 +198,14 @@
 
     function timechange(value, id, tablename, colname) {
         table = myDB.getTable(tablename);
-        table.update(id, value, colname);
+        table.update(id, value.value, colname);
 
     }
 
-    function flagchange(value, id, tablename, colname) {
+    function flagchange(element, id, tablename, colname) {
+       // element.checked = !element.checked;
         table = myDB.getTable(tablename);
-        table.update(id, value, colname);
+        table.update(id, element.checked, colname);
     }
 
     function ДобавитьВТаблицуСообщений_onclick() {
