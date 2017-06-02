@@ -39,12 +39,8 @@
                 <tr>
                     <td style="width:8%;" abbr="time">
                         Время</td>
-                    <td style="width:90%;" abbr="edit">
-                        Сообщение  
-                        <input align='right' 
-                            style='padding: 0px; margin: 1px; font-family:; position: static; top: auto; right: 100%;'
-                            Times New Roman', Times, serif; font-size: xx-small' type='button' value='Edit' 
-                            checked="checked" dir="rtl"  /> </td>
+                    <td style="width:90%;" abbr="edit" nowrap="nowrap">
+                        Сообщение&nbsp; </td>
                     <td style="width:2%;" abbr="checkbox">
                         завершение</td>
                 </tr>
@@ -55,14 +51,14 @@
             <table 
                 id="adresesTable" style="width:100%;" bgcolor="Info" border="1" 
                 frame="box" summary="gfdgfd" title="gfhfhgf">
-                <input type="button" value="+" style="font-weight: 700; text-align: left; float: left"  />
+                <input type="button" value="+" style="font-weight: 700; text-align: left; float: left" onclick="ДобавитьВТаблицуАдресов_onclick()" />
                 <input type="button" value="-" 
                     style="font-weight: 700; text-align: left; float: left; width: 24px;" 
                      />
 
                 Адресаты
                 <tr>
-                    <td style="width:98%;">
+                    <td style="width:98%;" abbr="edit">
                         Адресат</td>
                     <td style="width:2%;" abbr="checkbox">
                         Использовать</td>
@@ -70,18 +66,7 @@
                 </table>
 &nbsp;</td>
     </tr>
-    <tr>
-        <td>
-            &nbsp;
-        </td>
-        <td>
-            &nbsp;
-        </td>
-        <td>
-            &nbsp;
-        </td>
-    </tr>
-
+    
 </table>
 
 <script type="text/javascript">
@@ -137,11 +122,8 @@
             vistable.clear();
             db.exeqQuery("SELECT " + vistable.columns + ",id FROM " + tableName, [], function (tx, result) {
                 columns = vistable.columns.split(',');
-                for (var i = 0; i < result.rows.length; i++) {
-                    //values = [];
-                    //for (col in columns) values.push(result.rows.item(i)[columns[col]]);
+                for (var i = 0; i < result.rows.length; i++) 
                     vistable.addrow(result.rows.item(i), tableName);
-                }
 
             }, null);
             return this;
@@ -158,7 +140,8 @@
         this.columns = requisits;
 
         this.clear = function () {
-            for (i = 1; i < table.rows.length; i++) table.deleteRow(1);
+            var len = table.rows.length;
+            for (i = 1; i < len; i++) table.deleteRow(1);
             return this;
         }
 
@@ -168,22 +151,20 @@
             var i = 0;
             var columns = this.columns.split(",")
             for (cell in columns) {
-                //var vallen = values.lenght;
-                //for (var cell = 0; cell < vallen-1; cell++ ) {
                 var cell1 = row.insertCell(cell);
-                //var id = values[vallen];
                 abbr = table.rows[0].cells[cell].abbr;
                 var colname = columns[cell];
                 var value = values[colname];
+                
                 switch (abbr) {
                     case "checkbox":
-                        cell1.innerHTML = "<input type='checkbox' "+((value=="true")?"checked=true":"")+ " onchange='flagchange(this," + id + ",\"" + tablename + "\",\"" + colname + "\")' />";
+                        cell1.innerHTML = "<input type='checkbox' " + ((value == "true") ? "checked=true" : "") + " onchange='flagchange(this," + id + ",\"" + tablename + "\",\"" + colname + "\")' />";
                         break;
                     case "time":
-                        cell1.innerHTML = "<input type='time' value='" + value.toString() + "' onchange='timechange(this," + id + ",\"" + tablename +"\",\""+colname+ "\")' />";
+                        cell1.innerHTML = "<input type='time' value='" + value.toString() + "' onchange='timechange(this," + id + ",\"" + tablename + "\",\"" + colname + "\")' />";
                         break;
                     case "edit":
-                        cell1.innerHTML = value + "  ...<input align='right' style='padding: 1px; margin: 0px; font-family: 'Times New Roman', Times, serif; font-size: xx-small' type='button' value='Edit' onclick='edittextbox(" + id + "," + colname + "," + tablename+"," + value + ")' />";
+                        cell1.innerHTML = "<p nowrap='nowrap' onclick='textchange(this," + id + ",\"" + tablename + "\",\"" + colname + "\")' >" + value + "</p>";
                         break;
                     case "":
                         cell1.innerHTML = value;
@@ -203,14 +184,19 @@
     }
 
     function flagchange(element, id, tablename, colname) {
-       // element.checked = !element.checked;
         table = myDB.getTable(tablename);
         table.update(id, element.checked, colname);
     }
 
+    function textchange(element, id, tablename, colname) {
+        text = prompt("Введите текст сообщения");
+        // element.checked = !element.checked;
+        table = myDB.getTable(tablename);
+        table.update(id, text, colname);
+    }
+
     function ДобавитьВТаблицуСообщений_onclick() {
         text = prompt("Введите текст сообщения");
-
         messages.insert( ["08:00", text, false]);
     }
 
@@ -218,31 +204,30 @@
         events.insert( [new Date().toDateString(), false]);
     }
 
+    function ДобавитьВТаблицуАдресов_onclick() {
+        text = prompt("Введите адрес получателя");
+        adreseses.insert([text, false]);
+    }
+
+
     var myDB = new MyDatabase("todo");
 
     var eventsTable = new MyVisTable(document.getElementById("eventTable"), "startdate,isfinish");
     var events = myDB.initTable("events", "startdate DATE NOT NULL PRIMARY KEY, isfinish BOOLEAN", eventsTable);
-    //events.fullupdate();
 
     var messageTable = new MyVisTable(document.getElementById("messageTable"), "starttime,message,isfinish");
     var messages = myDB.initTable("messages", "starttime PRIMARY KEY, message, isfinish BOOLEAN", messageTable);
-   // messages.fullupdate();
 
+    var adresesTable = new MyVisTable(document.getElementById("adresesTable"), "email,enable");
+    var adreseses = myDB.initTable("emails", "email PRIMARY KEY, enable BOOLEAN", adresesTable);
 
-
-
-
+    
 
 /*
 http://www.databasejournal.com/sqletc/article.php/3903201/Using-the-Web-SQL-Database-API-in-HTML-5.htm
 https://habrahabr.ru/post/84654/
 https://www.w3schools.com/sql/sql_datatypes_general.asp
 */
-
-
-
-
-
 
 </script>
 
