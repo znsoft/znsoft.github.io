@@ -1,0 +1,126 @@
+<html>
+<script>
+
+    //genetic alghoritm for search best coeficients in formula
+    let formula = "p(2,#)*#3#*gb+p(2,#)*#3#*byte+p(2,#)*#1#*kb+p(2,#)*#2#*mb-p(2,#)*#9#*bit";
+
+    let kb = 8 * 1024;
+    let bit = 1;
+    let gb = 8 * 1024 * 1024 * 1024;
+    let mb = 8 * 1024 * 1024;
+    let byte = 8;
+
+    let p = Math.pow;
+
+
+
+    class DNA {
+        constructor(formula) {
+
+            this.formula = formula;
+
+            this.arrNum = [];
+
+            this.arr = formula.split("#");
+
+            for (let v in this.arr) this.arrNum[v] = Math.round(Math.random() * 10) - 1;
+            this.last = undefined
+
+        }
+
+        pr(range) { return Math.round(range * Math.random()); }
+
+        render(str, arNum, islog) {
+            let result = "";
+            let arr = str.split("#");
+            for (let v in arr) {
+                if (v == 0) { result = arr[v]; continue; }
+                let ch = arNum[v];
+                let c = ch.toString();
+                let chr1 = arr[v][0];
+                if (chr1 == "*" && ch < 0) c = "";
+                else
+                    if (chr1 != ")" && ch < 1) c = "";
+                result = result + c + arr[v];
+            }
+
+            return result;
+        }
+
+        calcRender(str, arNum, islog) { return Math.abs(eval(this.render(str, arNum, islog))); }
+
+        chnge(arrn) {
+            let ch = (Math.random() > 0.5 ? 1 : -1);
+            let i = this.pr(arrn.length);
+            arrn[i] -= ch;
+            return { index : i, change : ch };
+        }
+
+
+        checkGrade(str, arrn, last , gen) {
+            for (let i = 100; i > 0; i--) {
+                let narr = arrn.slice();// array copy
+                narr[gen.index] -= gen.change;
+                let nr = this.calcRender(str, narr, false);
+                if (last > nr && nr == Math.round(nr)) {
+                    last = nr; arrn = narr;
+                    continue;
+                }
+                break;
+            }
+            return [arrn, last];
+        }
+
+
+        check(str, arrn, last) {
+
+            if (last == undefined) last = this.calcRender(str, arrn, false);
+            let narr = arrn.slice();// array copy
+            let genotype = this.chnge(narr);
+            let nr = this.calcRender(str, narr, false);
+
+            if (last > nr && nr == Math.round(nr)) {
+
+                //console.log(this.render(str, narr, true) + " = " + nr.toString());
+                return  this.checkGrade(str, narr, nr , genotype);
+            }
+            //console.log("no mutation");
+            return [arrn, last];
+        }
+
+        update() {
+            let ppp = this.check(this.formula, this.arrNum, this.last);
+            this.last = ppp[1];
+            this.arrNum = ppp[0];
+        }
+
+
+        iterate() {
+            for (let i = 10000; i > 0 && this.last != 0; i--)this.update();
+            console.log(this.render(this.formula, this.arrNum, true) + " = " + this.last.toString()); 
+        }
+    }
+
+
+
+    function demo() {
+        let ard = [];
+        let last = {};
+        for (let i = 100; i > 0; i--) {
+            ard[i] = new DNA(formula); ard[i].update(); if (last.x == undefined || last.x > ard[i].last) { last.x = ard[i].last; last.d = ard[i]; }}
+        //let d = new DNA(formula);
+         last.d.iterate();
+
+    }
+
+    demo();
+
+
+</script>
+2)   p(2,8)*864 +p(2,8)*916+p(2,8)*679+p(2,-9)*897 = p(2,1)*982
+3)   p(2,9)*952+p(2,8)*722*8+p(2,-9)*29*8*1024*1024*1024+p(2,-9)*648*8*1024*1024 = p(2,6)*952*8*1024
+4)   p(2,7)*10310*bit+p(2,-19)*257*gb+p(2,-9)*364*kb+p(2,-19)*4*mb = p(2,6)*10813*byte
+5)   p(2,-32)*932*gb+p(2,4)*1031*byte+p(2,-13)*9112*kb+p(2,-21)*1128*mb = p(2,14)*9*bit
+
+</html>
+
