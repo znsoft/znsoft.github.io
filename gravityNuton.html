@@ -228,7 +228,7 @@
 
     function start() {
 
-        for (let i = 0; i < 100; i++)particles.push(new Circle(new Vector(Math.random() * w, Math.random() * h), Math.random() * 20 + 15, 0.95, 0.95));
+        for (let i = 0; i < 50; i++)particles.push(new Circle(new Vector(Math.random() * w*5, Math.random() * h*5), Math.random() * 20 + 15, 0.95, 0.95));
 
 
     }
@@ -329,8 +329,8 @@
 
         if (camera == undefined) camera = new Vector(w / 2, h / 2);
         if (biggestP != undefined) camera = camera.lerp(biggestP.c, 0.1);
-        let divider = (w * w + h * h);
-        let scale = maxpos.distSq(minpos) / divider;
+        let divider = Math.sqrt(w * w + h * h);
+        let scale = maxpos.dist(minpos) / divider;
 
 
 
@@ -362,14 +362,8 @@
                 y = (camera.y - p.track[t].y ) / scale + h / 2;
                 ctx.lineTo(x ,y);
                 ctx.stroke(); // Draw it
-                
                 ctx.closePath();
-                
-
             }
-
-
-            
             
 
             p.track.push(p.c.sub(p.v));
